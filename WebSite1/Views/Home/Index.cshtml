@@ -1,0 +1,24 @@
+﻿@model IEnumerable<CacheRecord>
+
+@{
+    ViewData["Title"] = "WebSite1 Home Page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Welcome to WebSite1</h1>
+    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    <br />
+    @{
+        if(@Model != null)
+        {
+            foreach (var record in @Model)
+            {
+                <p>Word1: @record.Word1</p>
+            }
+        } 
+        else
+        {
+            <p>Website1 not yet ready for requests</p>
+        }
+    }
+</div>

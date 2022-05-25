@@ -1,0 +1,91 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ApplicationManifest xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ApplicationTypeName="SfProbesWebType" ApplicationTypeVersion="1.0.0" xmlns="http://schemas.microsoft.com/2011/01/fabric">
+  <Parameters>
+    <Parameter Name="WebSite1_MinReplicaSetSize" DefaultValue="3" />
+    <Parameter Name="WebSite1_PartitionCount" DefaultValue="1" />
+    <Parameter Name="WebSite1_TargetReplicaSetSize" DefaultValue="3" />
+    <Parameter Name="WebSite1_ASPNETCORE_ENVIRONMENT" DefaultValue="" />
+    <Parameter Name="WebSite2_MinReplicaSetSize" DefaultValue="3" />
+    <Parameter Name="WebSite2_PartitionCount" DefaultValue="1" />
+    <Parameter Name="WebSite2_TargetReplicaSetSize" DefaultValue="3" />
+    <Parameter Name="WebSite2_ASPNETCORE_ENVIRONMENT" DefaultValue="" />
+    <Parameter Name="WebSite3_InstanceCount" DefaultValue="-1" />
+    <Parameter Name="WebSite3_ASPNETCORE_ENVIRONMENT" DefaultValue="" />
+  </Parameters>
+  <!-- Import the ServiceManifest from the ServicePackage. The ServiceManifestName and ServiceManifestVersion 
+       should match the Name and Version attributes of the ServiceManifest element defined in the 
+       ServiceManifest.xml file. -->
+  <ServiceManifestImport>
+    <ServiceManifestRef ServiceManifestName="WebSite1Pkg" ServiceManifestVersion="1.0.0" />
+    <ConfigOverrides />
+      <!-- No Probes configured on this service.  The /api/Health endpoint in this example depends on an HTTP healthprobe 
+         configured on the LB and it will return 400 Badrequest while the cache is being populated, then will return 200 OK.
+         This will cause the LB to not send traffic to the endpoint until the cache has been fully populated. -->
+    <EnvironmentOverrides CodePackageRef="code">
+      <EnvironmentVariable Name="ASPNETCORE_ENVIRONMENT" Value="[WebSite1_ASPNETCORE_ENVIRONMENT]" />
+    </EnvironmentOverrides>
+  </ServiceManifestImport>
+  <ServiceManifestImport>
+    <ServiceManifestRef ServiceManifestName="WebSite2Pkg" ServiceManifestVersion="1.0.0" />
+    <ConfigOverrides />
+    <EnvironmentOverrides CodePackageRef="code">
+      <EnvironmentVariable Name="ASPNETCORE_ENVIRONMENT" Value="[WebSite2_ASPNETCORE_ENVIRONMENT]" />
+    </EnvironmentOverrides>
+    <Policies>
+      <CodePackagePolicy CodePackageRef="Code">
+          <!-- The Probe below is a readiness probe.  The / endpoint in this example will return 400 Badrequest while the
+         cache is being populated, then will return 200 OK, this will cause the endpoint to be unavilable until the cache 
+         has been fully populated. -->
+        <Probes>
+          <Probe Type="Readiness" TimeoutSeconds="20" InitialDelaySeconds="150" FailureThreshold="5" SuccessThreshold="2">
+            <HttpGet Path="/" EndpointRef="ServiceEndpoint">
+              <HttpHeader Name="EndpointReadinessStatus" Value="probing" />
+            </HttpGet>
+          </Probe>
+        </Probes>
+      </CodePackagePolicy>
+    </Policies>
+  </ServiceManifestImport>
+  <ServiceManifestImport>
+    <ServiceManifestRef ServiceManifestName="WebSite3Pkg" ServiceManifestVersion="1.0.0" />
+    <ConfigOverrides />
+    <EnvironmentOverrides CodePackageRef="code">
+      <EnvironmentVariable Name="ASPNETCORE_ENVIRONMENT" Value="[WebSite3_ASPNETCORE_ENVIRONMENT]" />
+    </EnvironmentOverrides>
+    <Policies>
+      <CodePackagePolicy CodePackageRef="Code">
+          <!-- The Probe below is a liveness probe.  The /api/HealthCheck endpoint in this example is always returning
+         400 bad request, so this will cause the code package to get restarted every 1.5 minutes. -->
+        <Probes>
+          <Probe Type="Liveness" TimeoutSeconds="20" PeriodSeconds="30" InitialDelaySeconds="10" FailureThreshold="5" SuccessThreshold="2">
+            <HttpGet Path="/api/HealthCheck" EndpointRef="ServiceEndpoint">
+              <HttpHeader Name="EndpointReadinessStatus" Value="probing" />
+            </HttpGet>
+          </Probe>
+        </Probes>
+      </CodePackagePolicy>
+    </Policies>
+  </ServiceManifestImport>
+  <DefaultServices>
+    <!-- The section below creates instances of service types, when an instance of this 
+         application type is created. You can also create one or more instances of service type using the 
+         ServiceFabric PowerShell module.
+
+         The attribute ServiceTypeName below must match the name defined in the imported ServiceManifest.xml file. -->
+    <Service Name="WebSite1" ServicePackageActivationMode="ExclusiveProcess">
+      <StatefulService ServiceTypeName="WebSite1Type" TargetReplicaSetSize="[WebSite1_TargetReplicaSetSize]" MinReplicaSetSize="[WebSite1_MinReplicaSetSize]">
+        <UniformInt64Partition PartitionCount="[WebSite1_PartitionCount]" LowKey="-9223372036854775808" HighKey="9223372036854775807" />
+      </StatefulService>
+    </Service>
+    <Service Name="WebSite2" ServicePackageActivationMode="ExclusiveProcess">
+      <StatefulService ServiceTypeName="WebSite2Type" TargetReplicaSetSize="[WebSite2_TargetReplicaSetSize]" MinReplicaSetSize="[WebSite2_MinReplicaSetSize]">
+        <UniformInt64Partition PartitionCount="[WebSite2_PartitionCount]" LowKey="-9223372036854775808" HighKey="9223372036854775807" />
+      </StatefulService>
+    </Service>
+    <Service Name="WebSite3" ServicePackageActivationMode="ExclusiveProcess">
+      <StatelessService ServiceTypeName="WebSite3Type" InstanceCount="[WebSite3_InstanceCount]">
+        <SingletonPartition />
+      </StatelessService>
+    </Service>
+  </DefaultServices>
+</ApplicationManifest>
