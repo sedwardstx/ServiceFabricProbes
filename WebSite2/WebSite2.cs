@@ -1,17 +1,15 @@
-using System;
-using System.Collections.Generic;
-using System.Fabric;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.ServiceFabric.Data;
+using Microsoft.ServiceFabric.Data.Collections;
 using Microsoft.ServiceFabric.Services.Communication.AspNetCore;
 using Microsoft.ServiceFabric.Services.Communication.Runtime;
 using Microsoft.ServiceFabric.Services.Runtime;
-using Microsoft.ServiceFabric.Data;
-using Microsoft.ServiceFabric.Data.Collections;
+using System.Collections.Generic;
+using System.Fabric;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using WebSite2.Models;
 
 namespace WebSite2
@@ -37,10 +35,10 @@ namespace WebSite2
         {
             return new ServiceReplicaListener[]
             {
-                new ServiceReplicaListener(serviceContext =>
+                 new ServiceReplicaListener(serviceContext =>
                     new KestrelCommunicationListener(serviceContext, "ServiceEndpoint", (url, listener) =>
                     {
-                        ServiceEventSource.Current.ServiceMessage(serviceContext, $"WebSite2 Starting Kestrel on {url}");
+                        ServiceEventSource.Current.ServiceMessage(serviceContext, $"WebSite2 Starting ServiceEndpoint on {url}");
 
                         return new WebHostBuilder()
                                     .UseKestrel()
@@ -53,7 +51,7 @@ namespace WebSite2
                                     .UseServiceFabricIntegration(listener, ServiceFabricIntegrationOptions.None)
                                     .UseUrls(url)
                                     .Build();
-                    }))
+                    }),"ServiceEndpoint")
             };
         }
 

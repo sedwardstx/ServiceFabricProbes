@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.32428.217
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33213.308
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{A07B5EB6-E848-4116-A8D0-A826331D98C6}") = "SfProbesWeb", "SfProbes\SfProbesWeb.sfproj", "{7EEF19BE-3BF6-4917-BA07-7F1091449C8F}"
 EndProject
@@ -25,6 +25,8 @@ Global
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{7EEF19BE-3BF6-4917-BA07-7F1091449C8F}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{7EEF19BE-3BF6-4917-BA07-7F1091449C8F}.Debug|Any CPU.Build.0 = Debug|x64
+		{7EEF19BE-3BF6-4917-BA07-7F1091449C8F}.Debug|Any CPU.Deploy.0 = Debug|x64
 		{7EEF19BE-3BF6-4917-BA07-7F1091449C8F}.Debug|x64.ActiveCfg = Debug|x64
 		{7EEF19BE-3BF6-4917-BA07-7F1091449C8F}.Debug|x64.Build.0 = Debug|x64
 		{7EEF19BE-3BF6-4917-BA07-7F1091449C8F}.Debug|x64.Deploy.0 = Debug|x64

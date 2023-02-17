@@ -2,11 +2,9 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.ServiceFabric.Data;
 using Microsoft.ServiceFabric.Data.Collections;
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Fabric;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using WebSite2.Models;
@@ -65,7 +63,10 @@ namespace WebSite2.Controllers
                 {
                     ServiceEventSource.Current.ServiceMessage(_serviceContext, "Cache still loading....");
                     await tx.CommitAsync();
-                    return new BadRequestResult();
+
+                    return View();
+
+                    //return new BadRequestResult();
                 }
             }
 

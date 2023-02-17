@@ -15,12 +15,14 @@
   <!-- Import the ServiceManifest from the ServicePackage. The ServiceManifestName and ServiceManifestVersion 
        should match the Name and Version attributes of the ServiceManifest element defined in the 
        ServiceManifest.xml file. -->
+  <!-- WebSite1Pkg: No Probes configured on this service.  The /api/Health endpoint in this example depends on an HTTP healthprobe 
+         configured on the LB and it will return 400 Badrequest while the cache is being populated, then will return 200 OK.
+         This will cause the LB to not send traffic to the endpoint until the cache has been fully populated. -->
+  <!-- WebSite2Pkg/WebSite3Pkg: The Probes are readiness probes.  The / endpoint in this example will return 400 Badrequest while the cache is being populated in Website2 stateful service, 
+	       then will return 200 OK, this will allow WebSite3 to gracefully fail while the cache has been fully populated. -->
   <ServiceManifestImport>
     <ServiceManifestRef ServiceManifestName="WebSite1Pkg" ServiceManifestVersion="1.0.0" />
     <ConfigOverrides />
-      <!-- No Probes configured on this service.  The /api/Health endpoint in this example depends on an HTTP healthprobe 
-         configured on the LB and it will return 400 Badrequest while the cache is being populated, then will return 200 OK.
-         This will cause the LB to not send traffic to the endpoint until the cache has been fully populated. -->
     <EnvironmentOverrides CodePackageRef="code">
       <EnvironmentVariable Name="ASPNETCORE_ENVIRONMENT" Value="[WebSite1_ASPNETCORE_ENVIRONMENT]" />
     </EnvironmentOverrides>
@@ -33,12 +35,9 @@
     </EnvironmentOverrides>
     <Policies>
       <CodePackagePolicy CodePackageRef="Code">
-          <!-- The Probe below is a readiness probe.  The / endpoint in this example will return 400 Badrequest while the
-         cache is being populated, then will return 200 OK, this will cause the endpoint to be unavilable until the cache 
-         has been fully populated. -->
         <Probes>
-          <Probe Type="Readiness" TimeoutSeconds="20" InitialDelaySeconds="150" FailureThreshold="5" SuccessThreshold="2">
-            <HttpGet Path="/" EndpointRef="ServiceEndpoint">
+          <Probe Type="Readiness" TimeoutSeconds="2" FailureThreshold="2" SuccessThreshold="2">
+            <HttpGet Path="/api/Health" EndpointRef="ServiceEndpoint">
               <HttpHeader Name="EndpointReadinessStatus" Value="probing" />
             </HttpGet>
           </Probe>
@@ -54,11 +53,9 @@
     </EnvironmentOverrides>
     <Policies>
       <CodePackagePolicy CodePackageRef="Code">
-          <!-- The Probe below is a liveness probe.  The /api/HealthCheck endpoint in this example is always returning
-         400 bad request, so this will cause the code package to get restarted every 1.5 minutes. -->
         <Probes>
-          <Probe Type="Liveness" TimeoutSeconds="20" PeriodSeconds="30" InitialDelaySeconds="10" FailureThreshold="5" SuccessThreshold="2">
-            <HttpGet Path="/api/HealthCheck" EndpointRef="ServiceEndpoint">
+          <Probe Type="Readiness" PeriodSeconds="2" FailureThreshold="2" SuccessThreshold="2">
+            <HttpGet Path="/api/Health" EndpointRef="ServiceEndpoint">
               <HttpHeader Name="EndpointReadinessStatus" Value="probing" />
             </HttpGet>
           </Probe>
